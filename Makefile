@@ -16,8 +16,8 @@ export LAMBDA_EXECUTOR=local
 export MAIN_CONTAINER_NAME=localstack_main
 export AWS_SECRET_ACCESS_KEY="mock_access_key"
 export AWS_ACCESS_KEY_ID="mock_secret_key"
-export DEFAULT_REGION="ap-southeast-2"
-export DEBUG=1
+
+
 # ------------------------------------------------------------
 # DERIVED VARIABLES
 # ------------------------------------------------------------

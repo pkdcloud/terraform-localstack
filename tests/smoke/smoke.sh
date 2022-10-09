@@ -11,7 +11,7 @@ BUCKET="pkd-sandbox-apse2-ingest"
 OBJECT="test"
 MESSAGE='{"Name" : "Paul"}'
 REGION="ap-southeast-2"
-TIME=3 # each 1 = 5 seconds
+TIME=12 # each 1 = 5 seconds
 
 
 export AWS_PAGER=""
