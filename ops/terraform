@@ -1,0 +1,132 @@
+#!/usr/bin/env bash
+
+echo "[ :$(basename "$0"): ] Executing $0 $1 $2 $3 $4 $5 $6 $7"
+
+OPERATION=$1
+DEBUG=$2
+IS_LOCAL=$3
+TERRAFORM_STATE_LOCAL=$4
+TERRAFORM_WORKSPACE=$5
+TERRAFORM_MODULE=$6
+TERRAFORM_DIRECTORY=$7
+
+if ${DEBUG}; then
+	echo "[ DEBUG ] Enabled"
+	set -exuo
+	printenv
+fi
+
+if ${IS_LOCAL}; then
+    echo "[ INFO ] Using LocalStack"
+    TERRAFORM_RUNNER=tflocal
+else
+    TERRAFORM_RUNNER=terraform
+fi
+
+# This needs merging if localstack is on host
+# ------------------------------------------------------------
+# INIT
+# ------------------------------------------------------------
+if [[ ${OPERATION} == "init" ]]; then
+    cd ${TERRAFORM_DIRECTORY}/${TERRAFORM_MODULE}; \
+        ${TERRAFORM_RUNNER} init -backend=false
+fi 
+
+# ------------------------------------------------------------
+# WORKSPACE
+# ------------------------------------------------------------
+if [[ ${OPERATION} == "workspace" ]]; then
+    cd ${TERRAFORM_DIRECTORY}/${TERRAFORM_MODULE}; \
+        ${TERRAFORM_RUNNER} workspace select ${TERRAFORM_WORKSPACE} || terraform workspace new ${TERRAFORM_WORKSPACE}
+fi
+
+# ------------------------------------------------------------
+# PLAN
+# ------------------------------------------------------------
+if [[ ${OPERATION} == "plan" ]]; then
+    cd ${TERRAFORM_DIRECTORY}/${TERRAFORM_MODULE}; \
+        ${TERRAFORM_RUNNER} plan
+fi 
+
+# ------------------------------------------------------------
+# APPLY
+# ------------------------------------------------------------
+if [[ ${OPERATION} == "apply" ]]; then
+    cd ${TERRAFORM_DIRECTORY}/${TERRAFORM_MODULE}; \
+        ${TERRAFORM_RUNNER} apply -auto-approve
+fi 
+
+# ------------------------------------------------------------
+# DESTROY
+# ------------------------------------------------------------
+if [[ ${OPERATION} == "destroy" ]]; then
+    cd ${TERRAFORM_DIRECTORY}/${TERRAFORM_MODULE}; \
+        ${TERRAFORM_RUNNER} destroy -auto-approve
+fi
+
+# ------------------------------------------------------------
+# INIT
+# ------------------------------------------------------------
+if [[ ${OPERATION} == "show" ]]; then
+    cd ${TERRAFORM_DIRECTORY}/${TERRAFORM_MODULE}; \
+        ${TERRAFORM_RUNNER} show
+fi 
+
+# The below needs fleshing out
+
+# # ------------------------------------------------------------
+# # INIT
+# # ------------------------------------------------------------
+# if [[ ${OPERATION} == "init" ]]; then
+#     if [[ "${TERRAFORM_STATE_LOCAL}" == "true" ]]; then
+#         echo "[ :WARNING: ] : Remember to delete resources if you are using local state"
+#         docker-compose run --rm terraform sh -c "cd ${TERRAFORM_DIRECTORY}/${TERRAFORM_MODULE}; \
+#             ${TERRAFORM_RUNNER}  init -backend=false"
+#     else
+#         docker-compose run --rm terraform sh -c "cd ${TERRAFORM_DIRECTORY}/${TERRAFORM_MODULE}; \
+#             ${TERRAFORM_RUNNER}  init \
+#             -input=false \
+#                 -backend-config='bucket=${TERRAFORM_WORKSPACE}-terraform-state' \
+#                 -backend-config='key=${TERRAFORM_MODULE}.tfstate'"
+#     fi
+
+# # ------------------------------------------------------------
+# # VALIDATE
+# # ------------------------------------------------------------
+
+# elif [[ ${OPERATION} == "validate" ]]; then
+#     docker-compose run --rm terraform sh -c "cd ${TERRAFORM_DIRECTORY}/${TERRAFORM_MODULE}; \
+#     ${TERRAFORM_RUNNER}  validate"
+
+# # ------------------------------------------------------------
+# # WORKSPACE
+# # ------------------------------------------------------------
+
+# elif [[ ${OPERATION} == "workspace" ]]; then
+# 	docker-compose run --rm terraform sh -c "cd ${TERRAFORM_DIRECTORY}/${TERRAFORM_MODULE}; \
+# 		${TERRAFORM_RUNNER}  workspace select ${TERRAFORM_WORKSPACE} || terraform workspace new ${TERRAFORM_WORKSPACE}"
+
+# # ------------------------------------------------------------
+# # PLAN
+# # ------------------------------------------------------------
+
+# elif [[ ${OPERATION} == "plan" ]]; then
+# 	docker-compose run --rm terraform sh -c "cd ${TERRAFORM_DIRECTORY}/${TERRAFORM_MODULE}; \
+# 		${TERRAFORM_RUNNER}  plan"
+
+# # ------------------------------------------------------------
+# # APPLY
+# # ------------------------------------------------------------
+
+# elif [[ ${OPERATION} == "apply" ]]; then
+# 	docker-compose run --rm terraform sh -c "cd ${TERRAFORM_DIRECTORY}/${TERRAFORM_MODULE}; \
+# 		${TERRAFORM_RUNNER}  apply -auto-approve"
+
+# # ------------------------------------------------------------
+# # DESTROY
+# # ------------------------------------------------------------
+
+# elif [[ ${OPERATION} == "destroy" ]]; then
+# 	docker-compose run --rm terraform sh -c "cd ${TERRAFORM_DIRECTORY}/${TERRAFORM_MODULE}; \
+# 		${TERRAFORM_RUNNER}  destroy -auto-approve"
+# fi

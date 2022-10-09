@@ -1,0 +1,22 @@
+version: "3.9"
+
+services:
+  localstack:
+    image: localstack/localstack:latest
+    container_name: localstack
+    ports:
+      - "4566:4566"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  terraform:
+    build: 
+      context: .docker/terraform
+      network: host
+    image: pkdcloud/terraform
+    entrypoint: ""
+    working_dir: /work
+    volumes:
+      - .:/work
+#      - ~/.aws:/root/.aws
+#      - ~/.ssh:/root/.ssh
