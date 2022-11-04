@@ -35,3 +35,5 @@ terraform.rc
 
 # Build Artifacts
 terraform/localstack/files
+terraform/localstack/localstack_providers_override.tf
+volume

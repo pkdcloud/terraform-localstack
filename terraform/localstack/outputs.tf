@@ -15,3 +15,7 @@ output "sqs_url" {
 output "lambda_arn" {
   value = module.lambda.arn
 }
+
+output "s3_arn" {
+  value = module.s3
+}

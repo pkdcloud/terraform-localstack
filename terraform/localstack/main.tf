@@ -15,6 +15,17 @@ data "aws_iam_policy_document" "assume_role_policy_lambda" {
   }
 }
 
+data "aws_iam_policy_document" "assume_role_policy_kinesis_firehose" {
+  statement {
+    actions = ["sts:AssumeRole"]
+
+    principals {
+      type        = "Service"
+      identifiers = ["firehose.amazonaws.com"]
+    }
+  }
+}
+
 data "aws_iam_policy_document" "lambda_access_policy" {
   statement {
     sid = "SQSAccess"
@@ -45,7 +56,7 @@ data "aws_iam_policy_document" "lambda_access_policy" {
 data "archive_file" "ingest_lambda" {
   type        = "zip"
   source_dir  = "${path.module}/src/ingest"
-  output_path = "${path.module}/files/lambda-my-function.js.zip"
+  output_path = "${path.module}/builds/lambda-my-function.js.zip"
 }
 
 #------------------------------------------------------
@@ -53,11 +64,12 @@ data "archive_file" "ingest_lambda" {
 #------------------------------------------------------
 
 module "s3" {
-  for_each = toset(local.workspace.steps)
+  for_each = toset(local.global.steps)
 
   source = "../../modules/service-modules/s3"
 
-  bucket = "${terraform.workspace}-${each.key}"
+  bucket        = "${terraform.workspace}-${each.key}"
+  force_destroy = local.workspace.s3.force_destroy
 }
 
 module "iam" {
@@ -91,38 +103,37 @@ module "lambda" {
 module "sqs" {
   source = "../../modules/service-modules/sqs"
 
-  name = "${terraform.workspace}-events"
+  name       = local.workspace.sqs.fifo_queue == true ? "${terraform.workspace}-events.fifo" : "${terraform.workspace}-events"
+  fifo_queue = local.workspace.sqs.fifo_queue
 }
 
 module "sns" {
   source = "../../modules/service-modules/sns"
 
-  name = "${terraform.workspace}-events"
+  name       = local.workspace.sns.fifo_topic == true ? "${terraform.workspace}-events.fifo" : "${terraform.workspace}-events"
+  fifo_topic = local.workspace.sns.fifo_topic
 
   topic_subscription = {
-    subscription_1 = {
-      endpoint = module.sqs.arn
-      protocol = "sqs"
+    sqs_sub = {
+      endpoint             = module.sqs.arn
+      protocol             = "sqs"
+      raw_message_delivery = true
     }
   }
 }
 
-# resource "aws_iam_role" "iam_for_lambda" {
-#   name = "iam_for_lambda"
+# module "glue" {
+#   source = "../../modules/service-modules/glue"
 
-#   assume_role_policy = <<EOF
-# {
-#   "Version": "2012-10-17",
-#   "Statement": [
-#     {
-#       "Action": "sts:AssumeRole",
-#       "Principal": {
-#         "Service": "lambda.amazonaws.com"
-#       },
-#       "Effect": "Allow",
-#       "Sid": ""
-#     }
-#   ]
+#   database_name = terraform.workspace
 # }
-# EOF
+
+# module "firehose" {
+#   for_each = toset(local.global.steps)
+
+#   source = "../../modules/service-modules/kinesis-firehose"
+
+#   name       = "${terraform.workspace}-${each.key}"
+#   role_arn   = data.aws_iam_policy_document.assume_role_policy_kinesis_firehose.json
+#   bucket_arn = module.s3[each.key].arn
 # }

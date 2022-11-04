@@ -18,11 +18,18 @@ variable "display_name" {
   default     = "null"
 }
 
+variable "fifo_topic" {
+  description = "(Optional) Boolean indicating whether or not to create a FIFO (first-in-first-out) topic."
+  type        = bool
+  default     = false
+}
+
 variable "topic_subscription" {
-  description = "(Optional) Configuration for a topic subscription. (Required) Protocol to use. Valid values are: sqs, sms, lambda, firehose, and application. Protocols email, email-json, http and https are also valid but partially supported. (Required) Endpoint to send data to. The contents vary with the protocol."
+  description = "(Optional) Configuration for a topic subscription. (Required) Protocol to use. Valid values are: sqs, sms, lambda, firehose, and application. Protocols email, email-json, http and https are also valid but partially supported. (Required) Endpoint to send data to. The contents vary with the protocol. (Raw Message Delivery Optional)"
   type = map(object({
-    endpoint = string
-    protocol = string
+    endpoint             = string
+    protocol             = string
+    raw_message_delivery = optional(bool)
   }))
   default = {}
 }

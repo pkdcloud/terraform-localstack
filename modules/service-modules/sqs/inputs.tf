@@ -11,3 +11,9 @@ variable "name_prefix" {
   type        = string
   default     = null
 }
+
+variable "fifo_queue" {
+  description = "(Optional) Boolean indicating whether or not to create a FIFO (first-in-first-out) queue."
+  type        = bool
+  default     = false
+}

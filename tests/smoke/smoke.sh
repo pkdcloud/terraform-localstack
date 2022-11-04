@@ -4,20 +4,19 @@
 
 echo "[ :$(basename "$0"): ] Executing $0"
 
+WORKSPACE=localstack
 RUNNER="awslocal"
 ENDPOINT="http://localhost:4566"
-TOPIC_ARN="arn:aws:sns:ap-southeast-2:000000000000:pkd-sandbox-apse2-events"
-BUCKET="pkd-sandbox-apse2-ingest"
+TOPIC_ARN="arn:aws:sns:ap-southeast-2:000000000000:$WORKSPACE-events.fifo"
+BUCKET="$WORKSPACE-ingest"
 OBJECT="test"
 MESSAGE='{"Name" : "Paul"}'
 REGION="ap-southeast-2"
 TIME=12 # each 1 = 5 seconds
 
-
 export AWS_PAGER=""
 export AWS_ACCESS_KEY_ID="fake"
 export AWS_SECRET_ACCESS_KEY="fake"
-export AWS_DEFAULT_REGION="ap-southeast-2"
 
 echo "[ INFO ] Posting Message to SNS Topic" 
 

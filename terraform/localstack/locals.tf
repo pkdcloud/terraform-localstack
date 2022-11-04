@@ -8,12 +8,28 @@ locals {
       Module      = "localstack"
       Environment = "sandbox"
     }
+
+    steps = ["ingest", "presentation"]
   }
 
   env = {
-    pkd-sandbox-apse2 = {
-      steps = ["ingest", "presentation"]
+    localstack = {
+      s3 = {
+        force_destroy = true
+      }
+
+      sns = {
+        fifo_topic = true
+      }
+
+      sqs = {
+        fifo_queue = true
+      }
     }
+
+    nonprod = {}
+
+    prod = {}
   }
 
   workspace = local.env[terraform.workspace]
