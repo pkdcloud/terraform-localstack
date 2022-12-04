@@ -20,10 +20,10 @@
 #   value = module.s3
 # }
 
-# output "lakeoformation" {
-#   value = module.lakeformation
-# }
-
-output "glue" {
-  value = module.glue
+output "lakeoformation" {
+  value = module.lakeformation
 }
+
+# output "glue" {
+#   value = module.glue
+# }

@@ -79,14 +79,28 @@ data "aws_caller_identity" "current" {}
 # Module Implementations
 #------------------------------------------------------
 
-# module "lakeformation" {
-#   source = "../../modules/service-modules/lakeformation"
+module "lakeformation" {
+  source = "../../modules/service-modules/lakeformation"
 
-#   enable_module = true
-#   catalog_id           = data.aws_caller_identity.current.account_id
-#   admins               = ["arn:aws:iam::524497320159:role/aws-reserved/sso.amazonaws.com/ap-southeast-2/AWSReservedSSO_AWSAdministratorAccess_7a447baaa8d5bebf"]
-# }
+  enable_module = true
+  catalog_id    = data.aws_caller_identity.current.account_id
+  admins        = ["arn:aws:iam::524497320159:role/aws-reserved/sso.amazonaws.com/ap-southeast-2/AWSReservedSSO_AWSAdministratorAccess_7a447baaa8d5bebf"]
 
+  locations = {
+    events = {
+      arn      = "${module.s3["processed"].arn}/events/"
+      role_arn = "arn:aws:iam::524497320159:role/aws-reserved/sso.amazonaws.com/ap-southeast-2/AWSReservedSSO_AWSAdministratorAccess_7a447baaa8d5bebf"
+    }
+    dms = {
+      arn      = "${module.s3["processed"].arn}/dms/"
+      role_arn = "arn:aws:iam::524497320159:role/aws-reserved/sso.amazonaws.com/ap-southeast-2/AWSReservedSSO_AWSAdministratorAccess_7a447baaa8d5bebf"
+    }
+    s3_replication = {
+      arn      = "${module.s3["processed"].arn}/s3_replication/"
+      role_arn = "arn:aws:iam::524497320159:role/aws-reserved/sso.amazonaws.com/ap-southeast-2/AWSReservedSSO_AWSAdministratorAccess_7a447baaa8d5bebf"
+    }
+  }
+}
 
 module "s3" {
   for_each = toset(local.global.steps)
@@ -176,6 +190,32 @@ module "glue" {
       description   = "processed events"
       storage_descriptor = {
         location = "s3://${terraform.workspace}-processed/${local.workspace.glue.database_name}/table_2/"
+      }
+    }
+  }
+}
+
+module "glue2" {
+  source        = "../../modules/service-modules/glue"
+  enable_module = true
+
+  catalog_id   = data.aws_caller_identity.current.account_id
+  name         = "glue2"
+  location_uri = "s3://${terraform.workspace}-processed/glue2/"
+
+  tables = {
+    table_1 = {
+      database_name = "glue2"
+      description   = "raw events"
+      storage_descriptor = {
+        location = "s3://${terraform.workspace}-processed/glue2/table_1/"
+      }
+    }
+    table_2 = {
+      database_name = "glue2"
+      description   = "processed events"
+      storage_descriptor = {
+        location = "s3://${terraform.workspace}-processed/glue2/table_2/"
       }
     }
   }

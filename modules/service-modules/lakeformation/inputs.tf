@@ -40,3 +40,16 @@ variable "table_default_permissions" {
   type        = list(map(any))
   default     = []
 }
+
+# -------------------------------------------------
+# Lakeformation Location Variables
+# -------------------------------------------------
+
+variable "locations" {
+  description = "(Optional) Provides Lake Formation Data Lake Location Resources."
+  type = map(object({
+    arn      = string
+    role_arn = string
+  }))
+  default = null
+}

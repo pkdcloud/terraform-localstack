@@ -32,9 +32,8 @@ resource "aws_lakeformation_data_lake_settings" "this" {
 # Lakeformation Resources
 # -------------------------------------------------
 
-# resource "aws_lakeformation_resource" "this" {
-#   count = var.enable_module ? 1 : 0
-
-#   arn      = var.arn
-#   role_arn = var.role_arn
-# }
+resource "aws_lakeformation_resource" "this" {
+  for_each = { for k, v in var.locations : k => v if var.enable_module }
+  arn      = each.value.arn
+  role_arn = each.value.role_arn
+}
