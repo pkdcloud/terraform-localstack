@@ -1,6 +1,7 @@
 # outputs.tf
 
-output "xxxx" {
-  description = "xxxx"
-  value       = xxxxx.this.xxxx
+output "aws_lakeformation_data_lake_settings" {
+  description = "LakeFormation Settings"
+  value       = aws_lakeformation_data_lake_settings.this
 }
+

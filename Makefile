@@ -4,7 +4,7 @@
 # USER VARIABLES
 # ------------------------------------------------------------
 
-IS_LOCAL   ?= true
+IS_LOCAL   ?= false
 DEBUG      ?= false
 AWS_REGION ?= ap-southeast-2
 
@@ -19,13 +19,15 @@ TERRAFORM_DIRECTORY=terraform
 
 COMPOSE_RUNNER=docker compose
 
+ifeq ($(IS_LOCAL), true)
 export DNS_ADDRESS=0 # fixes localstack pro issue
 #export LOCALSTACK_API_KEY=xxxxxxxxx # this needs to happen
 export LAMBDA_EXECUTOR=local
 export MAIN_CONTAINER_NAME=localstack_main
 export AWS_SECRET_ACCESS_KEY=mock_access_key
 export AWS_ACCESS_KEY_ID=mock_secret_key
-export AWS_DEFAULT_REGION=ap-southeast-2 # For localstack tflocal provider override. It defaults to us-east-1 without this in place.
+export AWS_DEFAULT_REGION=$(AWS_REGION) # For localstack tflocal provider override. It defaults to us-east-1 without this in place.
+endif
 
 # ------------------------------------------------------------
 # DERIVED VARIABLES
@@ -49,7 +51,7 @@ down:
 # TERRAFORM TARGETS
 # ------------------------------------------------------------
 
-init: up
+init:
 	ops/terraform init $(TERRAFORM_ARGS)
 
 validate:

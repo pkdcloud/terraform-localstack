@@ -9,11 +9,18 @@ locals {
       Environment = "sandbox"
     }
 
-    steps = ["ingest", "presentation"]
+    steps = ["raw", "processed"]
   }
 
   env = {
     localstack = {
+      aws_region  = "ap-southeast-2"
+      aws_profile = "lks-shared-sandbox"
+
+      glue = {
+        database_name = "test"
+      }
+
       s3 = {
         force_destroy = true
       }
