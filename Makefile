@@ -4,21 +4,28 @@
 # USER VARIABLES
 # ------------------------------------------------------------
 
-IS_LOCAL ?= true
-DEBUG    ?= false
+IS_LOCAL   ?= true
+DEBUG      ?= false
+AWS_REGION ?= ap-southeast-2
 
 TERRAFORM_STATE_LOCAL=true
 TERRAFORM_WORKSPACE=localstack
 TERRAFORM_MODULE=localstack
 TERRAFORM_DIRECTORY=terraform
 
+# ------------------------------------------------------------
+# RUNNERS
+# ------------------------------------------------------------
+
+COMPOSE_RUNNER=docker compose
+
 export DNS_ADDRESS=0 # fixes localstack pro issue
-export LOCALSTACK_API_KEY=1f13YQ76Dj
+#export LOCALSTACK_API_KEY=xxxxxxxxx # this needs to happen
 export LAMBDA_EXECUTOR=local
 export MAIN_CONTAINER_NAME=localstack_main
-export AWS_SECRET_ACCESS_KEY="mock_access_key"
-export AWS_ACCESS_KEY_ID="mock_secret_key"
-export DEFAULT_REGION="ap-southeast-2" # For localstack Config
+export AWS_SECRET_ACCESS_KEY=mock_access_key
+export AWS_ACCESS_KEY_ID=mock_secret_key
+export AWS_DEFAULT_REGION=ap-southeast-2 # For localstack tflocal provider override. It defaults to us-east-1 without this in place.
 
 # ------------------------------------------------------------
 # DERIVED VARIABLES
@@ -32,17 +39,17 @@ TERRAFORM_ARGS := $(DEBUG) $(IS_LOCAL) $(TERRAFORM_STATE_LOCAL) $(TERRAFORM_WORK
 
 up:
 	#localstack start -d
-	docker-compose up --detach localstack
+	$(COMPOSE_RUNNER) up --detach localstack
 
 down:
 	#localstack stop
-	docker-compose down
+	$(COMPOSE_RUNNER) down
 
 # ------------------------------------------------------------
 # TERRAFORM TARGETS
 # ------------------------------------------------------------
 
-init:
+init: up
 	ops/terraform init $(TERRAFORM_ARGS)
 
 validate:
@@ -63,23 +70,20 @@ destroy: workspace
 show: workspace
 	ops/terraform show $(TERRAFORM_ARGS)
 
-all: up apply test destroy down
-all-up: up apply test
-all-down: up apply test down
-all-clean: up apply test down clean
+all: plan apply destroy
 
 # ------------------------------------------------------------
 # TERRAFORM TESTS
 # ------------------------------------------------------------
 
 test:
-	tests/smoke/smoke.sh
+	tests/smoke/smoke.sh $(TERRAFORM_WORKSPACE) $(IS_LOCAL) $(AWS_REGION)
 
 # ------------------------------------------------------------
 # UTILITY HELPERS
 # ------------------------------------------------------------
 
-clean:
+clean: down
 	sudo rm -rf terraform/localstack/.terraform.lock.hcl
 	sudo rm -rf terraform/localstack/.terraform
 	sudo rm -rf terraform/localstack/terraform.tfstate.d

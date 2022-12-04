@@ -15,7 +15,7 @@ data "aws_iam_policy_document" "assume_role_policy_lambda" {
   }
 }
 
-data "aws_iam_policy_document" "assume_role_policy_kinesis_firehose" {
+data "aws_iam_policy_document" "assume_role_policy_firehose" {
   statement {
     actions = ["sts:AssumeRole"]
 
@@ -26,7 +26,7 @@ data "aws_iam_policy_document" "assume_role_policy_kinesis_firehose" {
   }
 }
 
-data "aws_iam_policy_document" "lambda_access_policy" {
+data "aws_iam_policy_document" "access_policy_lambda" {
   statement {
     sid = "SQSAccess"
 
@@ -53,6 +53,21 @@ data "aws_iam_policy_document" "lambda_access_policy" {
   }
 }
 
+data "aws_iam_policy_document" "access_policy_firehose" {
+  statement {
+    sid = "SQSAccess"
+
+    actions = [
+      "lambda:*"
+    ]
+
+    resources = [
+      module.sqs.arn,
+    ]
+  }
+}
+
+
 data "archive_file" "ingest_lambda" {
   type        = "zip"
   source_dir  = "${path.module}/src/ingest"
@@ -72,19 +87,27 @@ module "s3" {
   force_destroy = local.workspace.s3.force_destroy
 }
 
-module "iam" {
+module "iam_lambda" {
   source = "../../modules/service-modules/iam"
 
-  name               = "${terraform.workspace}-ingest-processing-lambda-role"
+  name               = "${terraform.workspace}-ingest-processing-lambda"
   assume_role_policy = data.aws_iam_policy_document.assume_role_policy_lambda.json
-  policy             = data.aws_iam_policy_document.lambda_access_policy.json
+  policy             = data.aws_iam_policy_document.access_policy_lambda.json
+}
+
+module "iam_firehose" {
+  source = "../../modules/service-modules/iam"
+
+  name               = "${terraform.workspace}-ingest-delivery-firehose"
+  assume_role_policy = data.aws_iam_policy_document.assume_role_policy_firehose.json
+  policy             = data.aws_iam_policy_document.access_policy_firehose.json
 }
 
 module "lambda" {
   source = "../../modules/service-modules/lambda"
 
   function_name = "${terraform.workspace}-ingest-processing"
-  role          = module.iam.arn
+  role          = module.iam_lambda.arn
   handler       = "index.lambda_handler"
   runtime       = "python3.9"
   filename      = data.archive_file.ingest_lambda.output_path
@@ -122,18 +145,23 @@ module "sns" {
   }
 }
 
-# module "glue" {
-#   source = "../../modules/service-modules/glue"
+module "glue" {
+  source = "../../modules/service-modules/glue"
 
-#   database_name = terraform.workspace
-# }
+  database_name = terraform.workspace
+}
 
-# module "firehose" {
-#   for_each = toset(local.global.steps)
+module "firehose" {
+  for_each = toset(local.global.steps)
 
-#   source = "../../modules/service-modules/kinesis-firehose"
+  source = "../../modules/service-modules/kinesis-firehose"
 
-#   name       = "${terraform.workspace}-${each.key}"
-#   role_arn   = data.aws_iam_policy_document.assume_role_policy_kinesis_firehose.json
-#   bucket_arn = module.s3[each.key].arn
-# }
+  name       = "${terraform.workspace}-${each.key}"
+  role_arn   = module.iam_firehose.arn
+  bucket_arn = module.s3[each.key].arn
+}
+
+module "rds" {
+  source = "../../modules/service-modules/rds"
+
+}

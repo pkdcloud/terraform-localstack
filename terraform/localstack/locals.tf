@@ -19,11 +19,11 @@ locals {
       }
 
       sns = {
-        fifo_topic = true
+        fifo_topic = false
       }
 
       sqs = {
-        fifo_queue = true
+        fifo_queue = false
       }
     }
 

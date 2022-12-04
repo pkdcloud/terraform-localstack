@@ -51,3 +51,5 @@ export DEBUG=0
 local web app pro
 
 https://app.localstack.cloud/dashboard
+
+# Notes
