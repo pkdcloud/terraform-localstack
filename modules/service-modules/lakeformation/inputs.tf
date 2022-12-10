@@ -5,7 +5,7 @@
 # -------------------------------------------------
 
 variable "enable_module" {
-  description = "Enables the Module. Disabling tears down all resources."
+  description = "Enables the Module. Disabling tears down all module resources."
   type        = bool
   default     = false
 }
@@ -15,7 +15,6 @@ variable "admins" {
   type        = list(string)
   default     = null
 }
-
 
 variable "catalog_id" {
   description = "(Optional) Identifier for the Data Catalog. By default, the account ID."

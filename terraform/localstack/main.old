@@ -79,37 +79,37 @@ data "aws_caller_identity" "current" {}
 # Module Implementations
 #------------------------------------------------------
 
-module "lakeformation" {
-  source = "../../modules/service-modules/lakeformation"
+# module "lakeformation" {
+#   source = "../../modules/service-modules/lakeformation"
 
-  enable_module = true
-  catalog_id    = data.aws_caller_identity.current.account_id
-  admins        = ["arn:aws:iam::524497320159:role/aws-reserved/sso.amazonaws.com/ap-southeast-2/AWSReservedSSO_AWSAdministratorAccess_7a447baaa8d5bebf"]
+#   enable_module = true
+#   catalog_id    = data.aws_caller_identity.current.account_id
+#   admins        = ["arn:aws:iam::524497320159:role/aws-reserved/sso.amazonaws.com/ap-southeast-2/AWSReservedSSO_AWSAdministratorAccess_7a447baaa8d5bebf"]
 
-  locations = {
-    events = {
-      arn      = "${module.s3["processed"].arn}/events/"
-      role_arn = "arn:aws:iam::524497320159:role/aws-reserved/sso.amazonaws.com/ap-southeast-2/AWSReservedSSO_AWSAdministratorAccess_7a447baaa8d5bebf"
-    }
-    dms = {
-      arn      = "${module.s3["processed"].arn}/dms/"
-      role_arn = "arn:aws:iam::524497320159:role/aws-reserved/sso.amazonaws.com/ap-southeast-2/AWSReservedSSO_AWSAdministratorAccess_7a447baaa8d5bebf"
-    }
-    s3_replication = {
-      arn      = "${module.s3["processed"].arn}/s3_replication/"
-      role_arn = "arn:aws:iam::524497320159:role/aws-reserved/sso.amazonaws.com/ap-southeast-2/AWSReservedSSO_AWSAdministratorAccess_7a447baaa8d5bebf"
-    }
-  }
-}
+#   locations = {
+#     events = {
+#       arn      = "${module.s3["processed"].arn}/events/"
+#       role_arn = "arn:aws:iam::524497320159:role/aws-reserved/sso.amazonaws.com/ap-southeast-2/AWSReservedSSO_AWSAdministratorAccess_7a447baaa8d5bebf"
+#     }
+#     dms = {
+#       arn      = "${module.s3["processed"].arn}/dms/"
+#       role_arn = "arn:aws:iam::524497320159:role/aws-reserved/sso.amazonaws.com/ap-southeast-2/AWSReservedSSO_AWSAdministratorAccess_7a447baaa8d5bebf"
+#     }
+#     s3_replication = {
+#       arn      = "${module.s3["processed"].arn}/s3_replication/"
+#       role_arn = "arn:aws:iam::524497320159:role/aws-reserved/sso.amazonaws.com/ap-southeast-2/AWSReservedSSO_AWSAdministratorAccess_7a447baaa8d5bebf"
+#     }
+#   }
+# }
 
-module "s3" {
-  for_each = toset(local.global.steps)
+# module "s3" {
+#   for_each = toset(local.global.steps)
 
-  source = "../../modules/service-modules/s3"
+#   source = "../../modules/service-modules/s3"
 
-  bucket        = "${terraform.workspace}-${each.key}"
-  force_destroy = local.workspace.s3.force_destroy
-}
+#   bucket        = "${terraform.workspace}-${each.key}"
+#   force_destroy = local.workspace.s3.force_destroy
+# }
 
 # module "iam_lambda" {
 #   source = "../../modules/service-modules/iam"
@@ -169,57 +169,63 @@ module "s3" {
 #   }
 # }
 
-module "glue" {
-  source        = "../../modules/service-modules/glue"
-  enable_module = true
+# module "glue" {
+#   source        = "../../modules/service-modules/glue"
+#   enable_module = true
 
-  catalog_id   = data.aws_caller_identity.current.account_id
-  name         = local.workspace.glue.database_name
-  location_uri = "s3://${terraform.workspace}-processed/${local.workspace.glue.database_name}/"
+#   catalog_id   = data.aws_caller_identity.current.account_id
+#   name         = local.workspace.glue.database_name
+#   location_uri = "s3://${terraform.workspace}-processed/${local.workspace.glue.database_name}/"
 
-  tables = {
-    table_1 = {
-      database_name = local.workspace.glue.database_name
-      description   = "raw events"
-      storage_descriptor = {
-        location = "s3://${terraform.workspace}-processed/${local.workspace.glue.database_name}/table_1/"
-      }
-    }
-    table_2 = {
-      database_name = local.workspace.glue.database_name
-      description   = "processed events"
-      storage_descriptor = {
-        location = "s3://${terraform.workspace}-processed/${local.workspace.glue.database_name}/table_2/"
-      }
-    }
-  }
-}
+#   tables = {
+#     table_1 = {
+#       database_name = local.workspace.glue.database_name
+#       description   = "raw events"
+#       storage_descriptor = {
+#         location = "s3://${terraform.workspace}-processed/${local.workspace.glue.database_name}/table_1/"
+#       }
+#     }
+#     table_2 = {
+#       database_name = local.workspace.glue.database_name
+#       description   = "processed events"
+#       storage_descriptor = {
+#         location = "s3://${terraform.workspace}-processed/${local.workspace.glue.database_name}/table_2/"
+#       }
+#     }
+#   }
+# }
 
-module "glue2" {
-  source        = "../../modules/service-modules/glue"
-  enable_module = true
+# module "glue2" {
+#   source        = "../../modules/service-modules/glue"
+#   enable_module = true
 
-  catalog_id   = data.aws_caller_identity.current.account_id
-  name         = "glue2"
-  location_uri = "s3://${terraform.workspace}-processed/glue2/"
+#   catalog_id   = data.aws_caller_identity.current.account_id
+#   name         = "glue2"
+#   location_uri = "s3://${terraform.workspace}-processed/glue2/"
 
-  tables = {
-    table_1 = {
-      database_name = "glue2"
-      description   = "raw events"
-      storage_descriptor = {
-        location = "s3://${terraform.workspace}-processed/glue2/table_1/"
-      }
-    }
-    table_2 = {
-      database_name = "glue2"
-      description   = "processed events"
-      storage_descriptor = {
-        location = "s3://${terraform.workspace}-processed/glue2/table_2/"
-      }
-    }
-  }
-}
+#   tables = {
+#     table_1 = {
+#       database_name = "glue2"
+#       description   = "raw events"
+#       storage_descriptor = {
+#         location = "s3://${terraform.workspace}-processed/glue2/table_1/"
+#       }
+#     }
+#     table_2 = {
+#       database_name = "glue2"
+#       description   = "processed events"
+#       storage_descriptor = {
+#         location = "s3://${terraform.workspace}-processed/glue2/table_2/"
+#       }
+#     }
+#   }
+# }
+
+# module "rds" {
+#   source = "../../modules/service-modules/rds"
+
+# }
+
 
 # module "firehose" {
 #   for_each = toset(local.global.steps)
@@ -231,7 +237,3 @@ module "glue2" {
 #   bucket_arn = module.s3[each.key].arn
 # }
 
-# module "rds" {
-#   source = "../../modules/service-modules/rds"
-
-# }
