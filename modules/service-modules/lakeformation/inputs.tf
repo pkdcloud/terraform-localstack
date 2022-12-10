@@ -1,54 +1,74 @@
 # inputs.tf
 
 # -------------------------------------------------
-# Lakeformation Settings Variables
+# Lakeformation Data Lake Settings Variables
 # -------------------------------------------------
-
-variable "enable_module" {
-  description = "Enables the Module. Disabling tears down all module resources."
-  type        = optional(bool)
-  default     = true
-}
 
 variable "admins" {
   description = "(Optional) Set of ARNs of AWS Lake Formation principals (IAM users or roles)."
-  type        = optional(list(string))
+  type        = list(string)
   default     = null
 }
 
 variable "catalog_id" {
   description = "(Optional) Identifier for the Data Catalog. By default, the account ID."
-  type        = optional(string)
+  type        = string
   default     = null
 }
 
 variable "trusted_resource_owners" {
   description = "(Optional) List of the resource-owning account IDs that the caller's account can use to share their user access details (user ARNs)."
-  type        = optional(list(string))
+  type        = list(string)
   default     = null
 }
 
-variable "database_default_permissions" {
+variable "create_database_default_permissions" {
   description = "(Optional) Up to three configuration blocks of principal permissions for default create database permissions."
-  type        = optional(list(any))
-  default     = null
+
+  type = object({
+    permissions = optional(string) # (Optional) List of permissions that are granted to the principal. Valid values may include ALL, SELECT, ALTER, DROP, DELETE, INSERT, DESCRIBE, and CREATE_TABLE.
+    principal   = optional(string) # (Optional) Principal who is granted permissions. To enforce metadata and underlying data access control only by IAM on new databases and tables set principal to IAM_ALLOWED_PRINCIPALS and permissions to ["ALL"].
+  })
+
+  default = null
 }
 
-variable "table_default_permissions" {
+variable "create_table_default_permissions" {
   description = "(Optional) Up to three configuration blocks of principal permissions for default create table permissions."
-  type        = optional(list(map(any)))
-  default     = null
+
+  type = object({
+    permissions = optional(string) # (Optional) List of permissions that are granted to the principal. Valid values may include ALL, SELECT, ALTER, DROP, DELETE, INSERT, DESCRIBE, and CREATE_TABLE.
+    principal   = optional(string) # (Optional) Principal who is granted permissions. To enforce metadata and underlying data access control only by IAM on new databases and tables set principal to IAM_ALLOWED_PRINCIPALS and permissions to ["ALL"].
+  })
+
+  default = null
 }
 
 # -------------------------------------------------
 # Lakeformation Location Variables
 # -------------------------------------------------
 
-variable "locations" {
+variable "lakeformation_resource" {
   description = "(Optional) Provides Lake Formation Data Lake Location Resources."
   type = map(object({
-    arn      = optional(string)
-    role_arn = optional(string)
+    arn      = string           # (Required) Amazon Resource Name (ARN) of the resource, an S3 path.
+    role_arn = optional(string) # (Optional) Role that has read/write access to the resource. If not provided, the Lake Formation service-linked role must exist and is used.
   }))
+
+  default = null
+}
+
+# -------------------------------------------------
+# Lakeformation Tag Variables
+# -------------------------------------------------
+
+variable "lakeformation_tag" {
+  description = "Creates a map of LF-Tag with the specified name as key and a list of values. Each key must have at least one value. The maximum number of values permitted is 15."
+
+  type = map(object({
+    catalog_id = optional(string) # (Optional) ID of the Data Catalog to create the tag in. If omitted, this defaults to the AWS Account ID.)
+    values     = list(string)     # (Required) List of possible values an attribute can take.
+  }))
+
   default = null
 }

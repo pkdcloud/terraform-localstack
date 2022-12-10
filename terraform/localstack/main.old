@@ -15,17 +15,6 @@
 #   }
 # }
 
-# data "aws_iam_policy_document" "assume_role_policy_firehose" {
-#   statement {
-#     actions = ["sts:AssumeRole"]
-
-#     principals {
-#       type        = "Service"
-#       identifiers = ["firehose.amazonaws.com"]
-#     }
-#   }
-# }
-
 # data "aws_iam_policy_document" "access_policy_lambda" {
 #   statement {
 #     sid = "SQSAccess"
@@ -73,59 +62,9 @@
 #   output_path = "${path.module}/builds/lambda-my-function.js.zip"
 # }
 
-data "aws_caller_identity" "current" {}
-
 #------------------------------------------------------
 # Module Implementations
 #------------------------------------------------------
-
-# module "lakeformation" {
-#   source = "../../modules/service-modules/lakeformation"
-
-#   enable_module = true
-#   catalog_id    = data.aws_caller_identity.current.account_id
-#   admins        = ["arn:aws:iam::524497320159:role/aws-reserved/sso.amazonaws.com/ap-southeast-2/AWSReservedSSO_AWSAdministratorAccess_7a447baaa8d5bebf"]
-
-#   locations = {
-#     events = {
-#       arn      = "${module.s3["processed"].arn}/events/"
-#       role_arn = "arn:aws:iam::524497320159:role/aws-reserved/sso.amazonaws.com/ap-southeast-2/AWSReservedSSO_AWSAdministratorAccess_7a447baaa8d5bebf"
-#     }
-#     dms = {
-#       arn      = "${module.s3["processed"].arn}/dms/"
-#       role_arn = "arn:aws:iam::524497320159:role/aws-reserved/sso.amazonaws.com/ap-southeast-2/AWSReservedSSO_AWSAdministratorAccess_7a447baaa8d5bebf"
-#     }
-#     s3_replication = {
-#       arn      = "${module.s3["processed"].arn}/s3_replication/"
-#       role_arn = "arn:aws:iam::524497320159:role/aws-reserved/sso.amazonaws.com/ap-southeast-2/AWSReservedSSO_AWSAdministratorAccess_7a447baaa8d5bebf"
-#     }
-#   }
-# }
-
-# module "s3" {
-#   for_each = toset(local.global.steps)
-
-#   source = "../../modules/service-modules/s3"
-
-#   bucket        = "${terraform.workspace}-${each.key}"
-#   force_destroy = local.workspace.s3.force_destroy
-# }
-
-# module "iam_lambda" {
-#   source = "../../modules/service-modules/iam"
-
-#   name               = "${terraform.workspace}-ingest-processing-lambda"
-#   assume_role_policy = data.aws_iam_policy_document.assume_role_policy_lambda.json
-#   policy             = data.aws_iam_policy_document.access_policy_lambda.json
-# }
-
-# module "iam_firehose" {
-#   source = "../../modules/service-modules/iam"
-
-#   name               = "${terraform.workspace}-ingest-delivery-firehose"
-#   assume_role_policy = data.aws_iam_policy_document.assume_role_policy_firehose.json
-#   policy             = data.aws_iam_policy_document.access_policy_firehose.json
-# }
 
 # module "lambda" {
 #   source = "../../modules/service-modules/lambda"
@@ -224,16 +163,5 @@ data "aws_caller_identity" "current" {}
 # module "rds" {
 #   source = "../../modules/service-modules/rds"
 
-# }
-
-
-# module "firehose" {
-#   for_each = toset(local.global.steps)
-
-#   source = "../../modules/service-modules/kinesis-firehose"
-
-#   name       = "${terraform.workspace}-${each.key}"
-#   role_arn   = module.iam_firehose.arn
-#   bucket_arn = module.s3[each.key].arn
 # }
 

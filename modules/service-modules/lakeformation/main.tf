@@ -5,14 +5,13 @@
 # -------------------------------------------------
 
 resource "aws_lakeformation_data_lake_settings" "this" {
-  count = var.enable_module ? 1 : 0
-
   admins                  = var.admins
   catalog_id              = var.catalog_id
   trusted_resource_owners = var.trusted_resource_owners
 
   dynamic "create_database_default_permissions" {
-    for_each = var.database_default_permissions
+    for_each = var.create_database_default_permissions != null ? [var.create_database_default_permissions] : []
+
     content {
       permissions = create_database_default_permissions.value.permissions
       principal   = create_database_default_permissions.value.principal
@@ -20,7 +19,7 @@ resource "aws_lakeformation_data_lake_settings" "this" {
   }
 
   dynamic "create_table_default_permissions" {
-    for_each = var.table_default_permissions
+    for_each = var.create_table_default_permissions != null ? [var.create_table_default_permissions] : []
     content {
       permissions = create_table_default_permissions.value.permissions
       principal   = create_table_default_permissions.value.principal
@@ -29,11 +28,25 @@ resource "aws_lakeformation_data_lake_settings" "this" {
 }
 
 # -------------------------------------------------
+# Lakeformation Tags
+# -------------------------------------------------
+
+resource "aws_lakeformation_lf_tag" "this" {
+  for_each = var.lakeformation_tag != null ? var.lakeformation_tag : {}
+
+  catalog_id = each.value.catalog_id
+  key        = each.key
+  values     = each.value.values
+}
+
+# -------------------------------------------------
 # Lakeformation Resources
 # -------------------------------------------------
 
 resource "aws_lakeformation_resource" "this" {
-  for_each = { for k, v in var.locations : k => v if var.enable_module }
+  for_each = var.lakeformation_resource != null ? var.lakeformation_resource : {}
+
   arn      = each.value.arn
   role_arn = each.value.role_arn
 }
+

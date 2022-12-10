@@ -1,10 +1,16 @@
 # main.tf
 
+locals {
+  firehose = { enable_module = false }
+}
+
 # ----------------------------------------------------------------------------------------
 # Supporting Data Sources
 # ----------------------------------------------------------------------------------------
 
 data "aws_iam_policy_document" "assume_role_policy_firehose" {
+  count = local.firehose.enable_module ? 1 : 0
+
   statement {
     actions = ["sts:AssumeRole"]
 
@@ -16,6 +22,8 @@ data "aws_iam_policy_document" "assume_role_policy_firehose" {
 }
 
 data "aws_iam_policy_document" "access_policy_firehose" {
+  count = local.firehose.enable_module ? 1 : 0
+
   statement {
     sid = "LambdaAccess"
 
@@ -34,54 +42,62 @@ data "aws_iam_policy_document" "access_policy_firehose" {
 # ----------------------------------------------------------------------------------------
 
 module "iam_firehose" {
+  count  = local.firehose.enable_module ? 1 : 0
   source = "../../modules/service-modules/iam"
 
   name               = "${terraform.workspace}-raw-deliverystream-role"
-  assume_role_policy = data.aws_iam_policy_document.assume_role_policy_firehose.json
-  policy             = data.aws_iam_policy_document.access_policy_firehose.json
+  assume_role_policy = data.aws_iam_policy_document.assume_role_policy_firehose[count.index].json
+  policy             = data.aws_iam_policy_document.access_policy_firehose[count.index].json
 }
 
 module "kms_firehose" {
+  count  = local.firehose.enable_module ? 1 : 0
   source = "../../modules/service-modules/kms"
-  name   = "alias/raw-firehose"
+
+  name = "alias/raw-firehose"
 }
 
 module "kms_s3" {
+  count  = local.firehose.enable_module ? 1 : 0
   source = "../../modules/service-modules/kms"
-  name   = "alias/raw-s3"
+
+  name = "alias/raw-s3"
 }
 
 module "s3" {
-  source        = "../../modules/service-modules/s3"
+  count  = local.firehose.enable_module ? 1 : 0
+  source = "../../modules/service-modules/s3"
+
   bucket        = "lks-test-bucket"
   force_destroy = true
 }
 
 # ----------------------------------------------------------------------------------------
-# Sample Module
+# Example Module Implementation
 # ----------------------------------------------------------------------------------------
 
 module "firehose" {
+  count  = local.firehose.enable_module ? 1 : 0
   source = "../../modules/service-modules/kinesis-firehose"
 
   name          = "test-stream-s3-extended"
   destination   = "extended_s3"
-  enable_module = false
+  enable_module = local.firehose.enable_module
 
   server_side_encryption = {
     enabled  = true
     key_type = "CUSTOMER_MANAGED_CMK"
-    key_arn  = module.kms_s3.alias_arn
+    key_arn  = module.kms_s3[0].alias_arn
   }
 
   extended_s3_configuration = {
-    role_arn            = module.iam_firehose.arn
-    bucket_arn          = module.s3.arn
+    role_arn            = module.iam_firehose[0].arn
+    bucket_arn          = module.s3[0].arn
     buffer_interval     = 60
     buffer_size         = 5
     prefix              = "data/events"
     error_output_prefix = "errors/events"
-    kms_key_arn         = module.kms_firehose.alias_arn
+    kms_key_arn         = module.kms_firehose[0].alias_arn
 
     dynamic_partitioning_configuration = {
       enabled        = true
