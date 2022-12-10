@@ -7,7 +7,7 @@
 variable "enable_module" {
   description = "Enables the Module. Disabling tears down all module resources."
   type        = bool
-  default     = false
+  default     = true
 }
 
 variable "name" {

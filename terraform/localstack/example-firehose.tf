@@ -66,7 +66,7 @@ module "firehose" {
 
   name          = "test-stream-s3-extended"
   destination   = "extended_s3"
-  enable_module = true
+  enable_module = false
 
   server_side_encryption = {
     enabled  = true
