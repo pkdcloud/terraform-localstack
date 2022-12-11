@@ -45,26 +45,32 @@ module "lakeformation" {
   # Lake Formation adds the first path to the inline policy and attaches it to the service-linked role. 
   # When you register subsequent paths, Lake Formation adds the path to the existing policy.
 
-  # lakeformation_resource = {
-  #   events = {
-  #     arn      = "${module.s3_lakeformation["processed"].arn}/events/"
-  #     role_arn = "arn:aws:iam::524497320159:role/aws-reserved/sso.amazonaws.com/ap-southeast-2/AWSReservedSSO_AWSAdministratorAccess_7a447baaa8d5bebf"
-  #   }
-  #   # dms = {
-  #   #   arn      = "${module.s3_lakeformation["processed"].arn}/dms/"
-  #   #   role_arn = "arn:aws:iam::524497320159:role/aws-reserved/sso.amazonaws.com/ap-southeast-2/AWSReservedSSO_AWSAdministratorAccess_7a447baaa8d5bebf"
-  #   # }
-  #   # s3_replication = {
-  #   #   arn      = "${module.s3_lakeformation["processed"].arn}/s3_replication/"
-  #   #   role_arn = "arn:aws:iam::524497320159:role/aws-reserved/sso.amazonaws.com/ap-southeast-2/AWSReservedSSO_AWSAdministratorAccess_7a447baaa8d5bebf"
-  #   # }
-  # }
+  lakeformation_resource = {
+    events = {
+      arn      = "${module.s3_lakeformation["processed"].arn}/events/"
+      role_arn = "arn:aws:iam::524497320159:role/aws-reserved/sso.amazonaws.com/ap-southeast-2/AWSReservedSSO_AWSAdministratorAccess_7a447baaa8d5bebf"
+    }
+    # dms = {
+    #   arn      = "${module.s3_lakeformation["processed"].arn}/dms/"
+    #   role_arn = "arn:aws:iam::524497320159:role/aws-reserved/sso.amazonaws.com/ap-southeast-2/AWSReservedSSO_AWSAdministratorAccess_7a447baaa8d5bebf"
+    # }
+    # s3_replication = {
+    #   arn      = "${module.s3_lakeformation["processed"].arn}/s3_replication/"
+    #   role_arn = "arn:aws:iam::524497320159:role/aws-reserved/sso.amazonaws.com/ap-southeast-2/AWSReservedSSO_AWSAdministratorAccess_7a447baaa8d5bebf"
+    # }
+  }
 
   lakeformation_tag = {
     "projection" = {
       values = ["analytics", "profiles", "supppliers"]
     }
     "events" = {
+      values = ["profiles", "infra"]
+    }
+    "dms" = {
+      values = ["profiles", "infra"]
+    }
+    "s3_replication" = {
       values = ["profiles", "infra"]
     }
   }

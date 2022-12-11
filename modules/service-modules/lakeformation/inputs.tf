@@ -59,16 +59,52 @@ variable "lakeformation_resource" {
 }
 
 # -------------------------------------------------
-# Lakeformation Tag Variables
+# Lakeformation Tag & Assignment Variables
 # -------------------------------------------------
 
 variable "lakeformation_tag" {
-  description = "Creates a map of LF-Tag with the specified name as key and a list of values. Each key must have at least one value. The maximum number of values permitted is 15."
+  description = "(Optional) Creates a map of LF-Tag with the specified name as key and a list of values. Each key must have at least one value. The maximum number of values permitted is 15."
 
   type = map(object({
     catalog_id = optional(string) # (Optional) ID of the Data Catalog to create the tag in. If omitted, this defaults to the AWS Account ID.)
     values     = list(string)     # (Required) List of possible values an attribute can take.
   }))
+
+  default = null
+}
+
+variable "lakeformation_resource_tag" {
+  description = "(Optional) Manages an attachment between one or more existing LF-tags and an existing Lake Formation resource."
+
+  type = object({
+    catalog_id = optional(string) # (Optional) Identifier for the Data Catalog. By default, the account ID.
+
+    lf_tag = object({
+      key        = string           # (Required) Key name for an existing LF-tag.
+      value      = string           # (Required) Value from the possible values for the LF-tag.
+      catalog_id = optional(string) # (Optional) Identifier for the Data Catalog. By default, it is the account ID of the caller.
+    })
+
+    database = object({
+      name       = string           # (Required) Name of the database resource. Unique to the Data Catalog.
+      catalog_id = optional(string) # (Optional) Identifier for the Data Catalog. By default, it is the account ID of the caller.
+    })
+
+    table = object({
+      database_name = string           # (Required) Name of the database for the table. Unique to a Data Catalog.
+      name          = string           # (Required, at least one of name or wildcard) Name of the table.
+      catalog_id    = optional(string) # (Optional) Identifier for the Data Catalog. By default, it is the account ID of the caller.
+    })
+
+    table_with_columns = object({
+      column_names          = set(string)           # (Required, at least one of column_names or wildcard) Set of column names for the table.
+      database_name         = string                # (Required) Name of the database for the table with columns resource. Unique to the Data Catalog.
+      name                  = string                # (Required) Name of the table resource.
+      wildcard              = string                # (Required, at least one of column_names or wildcard) Whether to use a column wildcard. If excluded_column_names is included, wildcard must be set to true to avoid Terraform reporting a difference.
+      catalog_id            = optional(string)      # (Optional) Identifier for the Data Catalog. By default, it is the account ID of the caller.
+      excluded_column_names = optional(set(string)) # (Optional) Set of column names for the table to exclude. If excluded_column_names is included, wildcard must be set to true to avoid Terraform reporting a difference.
+    })
+  })
 
   default = null
 }
