@@ -31,38 +31,70 @@ resource "aws_lakeformation_data_lake_settings" "this" {
 # Lakeformation Tags & Tag Attachments
 # -------------------------------------------------
 
-# resource "aws_lakeformation_lf_tag" "this" {
-#   for_each = var.lakeformation_tag != null ? var.lakeformation_tag : {}
+resource "aws_lakeformation_lf_tag" "this" {
+  for_each = var.lakeformation_tag != null ? var.lakeformation_tag : {}
 
-#   catalog_id = each.value.catalog_id
-#   key        = each.key
-#   values     = each.value.values
-# }
+  catalog_id = each.value.catalog_id
+  key        = each.key
+  values     = each.value.values
+}
+
+resource "aws_lakeformation_resource_lf_tags" "this" {
+
+  dynamic "database" {
+    for_each = var.lakeformation_resource_tags != null ? [var.lakeformation_resource_tags] : []
+
+    content {
+      name       = each.value.name
+      catalog_id = each.value.catalog_id
+    }
+  }
+
+  lf_tag {
+    key   = "right"
+    value = "luffield"
+  }
+
+  lf_tag {
+    key   = "left"
+    value = "aintree"
+  }
+}
 
 # resource "aws_lakeformation_resource_lf_tags" "this" {
+#   # for_each = var.aws_lakeformation_resource_lf_tags != null ? var.aws_lakeformation_resource_lf_tags : {}
 
 #   content {
 #     catalog_id = each.value.catalog_id
-#   }
 
-#   dynamic "lf_tag" {
-#     for_each = var.lakeformation_resource_tag != null ? [var.lakeformation_resource_tag] : []
 
-#     content {
-#       key        = string
-#       value      = string
-#       catalog_id = optional(string)
+#     dynamic "database" {
+#       for_each = var.lakeformation_resource_tag != null ? [var.lakeformation_resource_tag] : []
+
+#       content {
+#         name       = each.value.name
+#         catalog_id = each.value.catalog_id
+#       }
 #     }
+
+#     lf_tag {
+#       key   = "events"
+#       value = "analytics"
+#     }
+
+#     # dynamic "lf_tag" {
+#     #   for_each = lakeformation_resource_tag.value.lf_tag != null ? [lakeformation_resource_tag.value.lf_tag] : []
+
+#     #   content {
+#     #     key        = each.value.key
+#     #     value      = each.value.value
+#     #     catalog_id = each.value.catalog_id
+#     #   }
+#     # }
 #   }
 
-#   # dynamic "database" {
-#   #   for_each = var.lakeformation_resource_tag != null ? [var.lakeformation_resource_tag] : []
 
-#   #   content {
-#   #     name       = each.value.name
-#   #     catalog_id = each.value.catalog_id
-#   #   }
-#   # }
+
 
 #   # table {
 #   #   database_name = string

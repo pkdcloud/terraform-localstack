@@ -61,27 +61,37 @@ module "lakeformation" {
   }
 
   lakeformation_tag = {
-    "projection" = {
+    projection = {
       values = ["analytics", "profiles", "supppliers"]
     }
-    "events" = {
+    events = {
       values = ["profiles", "infra"]
     }
-    "dms" = {
-      values = ["profiles", "infra"]
-    }
-    "s3_replication" = {
-      values = ["profiles", "infra"]
-    }
+    # "dms" = {
+    #   values = ["profiles", "infra"]
+    # }
+    # "s3_replication" = {
+    #   values = ["profiles", "infra"]
+    # }
   }
 
-  lakeformation_resource_tag = {
+  lakeformation_resource_tags = {
     catalog_id = data.aws_caller_identity.current.account_id
 
-    lf_tag = {
-      key   = "events"
-      value = "analytics"
+    database = {
+      name = "test"
     }
+
+    lf_tag = [
+      {
+        key   = "key1"
+        value = "value"
+      },
+      {
+        key   = "key2"
+        value = "value"
+      }
+    ]
   }
 }
 
