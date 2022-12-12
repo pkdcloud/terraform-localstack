@@ -31,55 +31,54 @@ resource "aws_lakeformation_data_lake_settings" "this" {
 # Lakeformation Tags & Tag Attachments
 # -------------------------------------------------
 
-resource "aws_lakeformation_lf_tag" "this" {
-  for_each = var.lakeformation_tag != null ? var.lakeformation_tag : {}
+# resource "aws_lakeformation_lf_tag" "this" {
+#   for_each = var.lakeformation_tag != null ? var.lakeformation_tag : {}
 
-  catalog_id = each.value.catalog_id
-  key        = each.key
-  values     = each.value.values
-}
+#   catalog_id = each.value.catalog_id
+#   key        = each.key
+#   values     = each.value.values
+# }
 
-resource "aws_lakeformation_resource_lf_tags" "this" {
+# resource "aws_lakeformation_resource_lf_tags" "this" {
 
-  catalog_id = "xxxxxxx" # (Optional) Identifier for the Data Catalog. By default, the account ID. The Data Catalog is the persistent metadata store. It contains database definitions, table definitions, and other control information to manage your Lake Formation environment.
+#   content {
+#     catalog_id = each.value.catalog_id
+#   }
 
-  dynamic "database" {
-    for_each = extended_s3_configuration.value.dynamic_partitioning_configuration != null ? [extended_s3_configuration.value.dynamic_partitioning_configuration] : []
+#   dynamic "lf_tag" {
+#     for_each = var.lakeformation_resource_tag != null ? [var.lakeformation_resource_tag] : []
 
-    content {
-      name       = string
-      catalog_id = optional(string)
-    }
-  }
-  database {
-    name       = string
-    catalog_id = optional(string)
-  }
+#     content {
+#       key        = string
+#       value      = string
+#       catalog_id = optional(string)
+#     }
+#   }
 
-  # (Optional) Configuration block for a table resource.
-  table {
-    database_name = string
-    name          = string
-    catalog_id    = optional(string)
-  }
+#   # dynamic "database" {
+#   #   for_each = var.lakeformation_resource_tag != null ? [var.lakeformation_resource_tag] : []
 
-  # (Optional) Configuration block for a table with columns resource. 
-  table_with_columns {
-    column_names          = set(string)
-    database_name         = string
-    name                  = string
-    wildcard              = string
-    catalog_id            = optional(string)
-    excluded_column_names = optional(set(string))
-  }
+#   #   content {
+#   #     name       = each.value.name
+#   #     catalog_id = each.value.catalog_id
+#   #   }
+#   # }
 
-  # (Required) Set of LF-tags to attach to the resource.
-  lf_tag {
-    key        = string
-    value      = string
-    catalog_id = optional(string)
-  }
-}
+#   # table {
+#   #   database_name = string
+#   #   name          = string
+#   #   catalog_id    = optional(string)
+#   # }
+
+#   # table_with_columns {
+#   #   column_names          = set(string)
+#   #   database_name         = string
+#   #   name                  = string
+#   #   wildcard              = string
+#   #   catalog_id            = optional(string)
+#   #   excluded_column_names = optional(set(string))
+#   # }
+# }
 
 
 

@@ -74,6 +74,15 @@ module "lakeformation" {
       values = ["profiles", "infra"]
     }
   }
+
+  lakeformation_resource_tag = {
+    catalog_id = data.aws_caller_identity.current.account_id
+
+    lf_tag = {
+      key   = "events"
+      value = "analytics"
+    }
+  }
 }
 
 output "debug1" {
